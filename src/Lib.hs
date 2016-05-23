@@ -1,5 +1,3 @@
-{-# LANGUAGE Strict #-}
-
 module Lib
     ( someFunc
     ) where
@@ -11,22 +9,22 @@ someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
 type Fp = Float
-data NDC = NDC Fp Fp
-data UV = UV Fp Fp
-data P3 = P3 Fp Fp Fp
-data V3 = V3 Fp Fp Fp
-data N3 = N3 Fp Fp Fp
-data Color = Color Fp Fp Fp
+data NDC = NDC {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp
+data UV = UV {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp
+data P3 = P3 {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp
+data V3 = V3 {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp
+data N3 = N3 {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp
+data Color = Color {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp
 data Ray = Ray
-  { orgn :: P3
-  , dirn :: V3
+  { orgn :: {-# UNPACK #-} !P3
+  , dirn :: {-# UNPACK #-} !V3
   }
 data Shader = Shader
   { sample :: P3 -> N3 -> Vector Ray
   , shade :: Vector Ray -> Color
   }
 data TraceResult = NoHit
-                 | Hit P3 N3
+                 | Hit {-# UNPACK #-} !P3 {-# UNPACK #-} !N3
 newtype Traceable = Traceable (Vector Ray -> Vector TraceResult)
 data Geom = Geom Traceable Shader
 
@@ -54,8 +52,8 @@ data Sample = Sample NDC RayContext
 data Shade = Shade Shader RayContext
 
 data DeferredRay = DeferredRay
-  { context :: RayContext
-  , ray :: Ray
+  { context :: {-# UNPACK #-} !RayContext
+  , ray :: {-# UNPACK #-} !Ray
   }
 
 data TraceLayer a = TraceLayer
