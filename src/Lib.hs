@@ -1,47 +1,42 @@
+{-# LANGUAGE Strict #-}
+
 module Lib
     ( someFunc
     ) where
 
 import Data.Vector (Vector)
+import Data.Word (Word64)
 
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
-{-
-type FPType = Float
-
-newtype Pt3 = Pt3 (V3 FPType)
-
-newtype Vec3 = Vec3 (V3 FPType)
-
-newtype Nor3 = Nor3 (V3 FPType)
-
-newtype Color = Color (V3 FPType)
-
+type Fp = Float
+data NDC = NDC Fp Fp
+data UV = UV Fp Fp
+data P3 = P3 Fp Fp Fp
+data V3 = V3 Fp Fp Fp
+data N3 = N3 Fp Fp Fp
+data Color = Color Fp Fp Fp
 data Ray = Ray
-  { rayO :: !Pt3
-  , rayD :: !Vec3
+  { orgn :: P3
+  , dirn :: V3
   }
-
 data Shader = Shader
-  { shaderSample :: Pt3 -> Nor3 -> Vector Ray
-  , shaderShade :: Vector Ray -> Color
+  { sample :: P3 -> N3 -> Vector Ray
+  , shade :: Vector Ray -> Color
   }
-
 data TraceResult = NoHit
-                 | TraceHit Pt3 Vec3
-
-newtype Traceable = Traceable (Ray -> TraceResult)
-
+                 | Hit P3 N3
+newtype Traceable = Traceable (Vector Ray -> Vector TraceResult)
 data Geom = Geom Traceable Shader
 
-sphere :: Pt3 -> Double -> Traceable
+sphere :: P3 -> Fp -> Traceable
 sphere = undefined
 
-tri :: Pt3 -> Pt3 -> Pt3 -> Traceable
+tri :: P3 -> P3 -> P3 -> Traceable
 tri = undefined
 
-quad :: Pt3 -> Pt3 -> Pt3 -> Pt3 -> Traceable
+quad :: P3 -> P3 -> P3 -> P3 -> Traceable
 quad = undefined
 
 lambert :: Color -> Shader
@@ -52,20 +47,21 @@ emission = undefined
 
 ----------------------------------
 
-type ContextId = Long
+type RayContext = Word64
 
-data Deferred a = Deferred
-  { defContext :: ContextId
-  , defValue :: a
+data Sample = Sample NDC RayContext
+
+data Shade = Shade Shader RayContext
+
+data DeferredRay = DeferredRay
+  { context :: RayContext
+  , ray :: Ray
   }
 
-type DeferredRay = Deferred Ray
-
-type DeferredColor = Deferred Color
-
-data ShaderContext = ShaderContext
-  { scContextId :: ContextId
-  , scShader :: Shader
+data TraceLayer a = TraceLayer
+  { instructions :: Vector a
+  , rays :: Vector DeferredRay
   }
 
--}
+type PrimaryRays = TraceLayer Sample
+type SecondaryRays = TraceLayer Shade
