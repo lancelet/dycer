@@ -16,12 +16,12 @@ data V3 = V3 {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp
 data N3 = N3 {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp
 data Color = Color {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp {-# UNPACK #-} !Fp
 data Ray = Ray
-  { orgn :: {-# UNPACK #-} !P3
-  , dirn :: {-# UNPACK #-} !V3
+  { rayo :: {-# UNPACK #-} !P3
+  , rayd :: {-# UNPACK #-} !V3
   }
 data Shader = Shader
-  { sample :: P3 -> N3 -> Vector Ray
-  , shade :: Vector Ray -> Color
+  { shadSample :: P3 -> N3 -> Vector Ray
+  , shadShade :: Vector Ray -> Color
   }
 data TraceResult = NoHit
                  | Hit {-# UNPACK #-} !P3 {-# UNPACK #-} !N3
@@ -52,13 +52,13 @@ data Sample = Sample NDC RayContext
 data Shade = Shade Shader RayContext
 
 data DeferredRay = DeferredRay
-  { context :: {-# UNPACK #-} !RayContext
-  , ray :: {-# UNPACK #-} !Ray
+  { defRayContext :: {-# UNPACK #-} !RayContext
+  , defRay :: {-# UNPACK #-} !Ray
   }
 
 data TraceLayer a = TraceLayer
-  { instructions :: Vector a
-  , rays :: Vector DeferredRay
+  { tlInstructions :: Vector a
+  , tlRays :: Vector DeferredRay
   }
 
 type PrimaryRays = TraceLayer Sample
