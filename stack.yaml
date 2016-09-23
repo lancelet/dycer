@@ -2,5 +2,6 @@ resolver: lts-7.0
 packages:
 - '.'
 extra-deps:
+- language-python-0.5.4
 flags: {}
 extra-package-dbs: []
