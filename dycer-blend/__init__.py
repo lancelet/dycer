@@ -13,8 +13,49 @@ bl_info = {
 # Fn-F8 reloads plugins
 
 import bpy
+import json
+
+from math import degrees
 
 dren = 'DYCER_RENDERER'
+
+def vect3_dict(axis):
+    return {
+        'vec3' : {
+            'x' : axis[0],
+            'y' : axis[1],
+            'z' : axis[2]
+        }
+    }
+
+def axis_angle_dict(axis, angle):
+    return {
+        'axisangle' : {
+            'axis' : vect3_dict(axis),
+            'angle' : angle
+        }
+    }
+
+def camera_dict(cam):
+    m = cam.matrix_world
+    (axis, angle) = m.to_quaternion().to_axis_angle()
+    return {
+        'camera' : {
+            'fov' : degrees(cam.data.angle),
+            'translation' : vect3_dict(m.translation),
+            'rotation' : axis_angle_dict(axis, angle)
+        }
+    }
+
+def scene_dict(scene):
+    resfac = scene.render.resolution_percentage / 100.0
+    return {
+        'scene' : {
+            'camera' : camera_dict(scene.camera),
+            'xres' : scene.render.resolution_x * resfac,
+            'yres' : scene.render.resolution_y * resfac
+        }
+    }
 
 class DycerRender(bpy.types.RenderEngine):
     bl_idname = dren
@@ -27,6 +68,7 @@ class DycerRender(bpy.types.RenderEngine):
 
     def render(self, scene):
         print("Render")
+        print(json.dumps(scene_dict(scene), sort_keys=True))
 
     def update(self, data, scene):
         print("Update")
