@@ -47,13 +47,13 @@ def camera_dict(cam):
         }
     }
 
-def scene_dict(scene):
+def scene_dict(width, height, scene):
     resfac = scene.render.resolution_percentage / 100.0
     return {
         'scene' : {
             'camera' : camera_dict(scene.camera),
-            'xres' : scene.render.resolution_x * resfac,
-            'yres' : scene.render.resolution_y * resfac
+            'xres' : width,
+            'yres' : height
         }
     }
 
@@ -68,7 +68,16 @@ class DycerRender(bpy.types.RenderEngine):
 
     def render(self, scene):
         print("Render")
-        print(json.dumps(scene_dict(scene), sort_keys=True))
+        resfac = scene.render.resolution_percentage / 100.0
+        self.width  = int(scene.render.resolution_x * resfac)
+        self.height = int(scene.render.resolution_y * resfac)
+        print(json.dumps(scene_dict(self.width, self.height, scene), sort_keys=True))
+
+        print("Setting result")
+        result = self.begin_result(0, 0, self.width, self.height)
+        rpass = result.layers[0].passes[0]
+        rpass.rect = [ [0.0, 0.0, 1.0, 1.0] ] * (self.width * self.height)
+        self.end_result(result)
 
     def update(self, data, scene):
         print("Update")
