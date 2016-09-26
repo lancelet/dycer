@@ -21,40 +21,34 @@ dren = 'DYCER_RENDERER'
 
 def vect3_dict(axis):
     return {
-        'vec3' : {
-            'x' : axis[0],
-            'y' : axis[1],
-            'z' : axis[2]
-        }
+        'x' : axis[0],
+        'y' : axis[1],
+        'z' : axis[2]
     }
 
 def axis_angle_dict(axis, angle):
     return {
-        'axisangle' : {
-            'axis' : vect3_dict(axis),
-            'angle' : angle
-        }
+        'axis' : vect3_dict(axis),
+        'angle' : angle
     }
 
 def camera_dict(cam):
     m = cam.matrix_world
-    (axis, angle) = m.to_quaternion().to_axis_angle()
+    (axis, angleRad) = m.to_quaternion().to_axis_angle()
     return {
-        'camera' : {
-            'fov' : degrees(cam.data.angle),
-            'translation' : vect3_dict(m.translation),
-            'rotation' : axis_angle_dict(axis, angle)
-        }
+        'fov' : degrees(cam.data.angle),
+        'translation' : vect3_dict(m.translation),
+        'rotation' : axis_angle_dict(axis, degrees(angleRad))
     }
+
+# def mesh_dict(mesh):
 
 def scene_dict(width, height, scene):
     resfac = scene.render.resolution_percentage / 100.0
     return {
-        'scene' : {
-            'camera' : camera_dict(scene.camera),
-            'xres' : width,
-            'yres' : height
-        }
+        'camera' : camera_dict(scene.camera),
+        'xres' : width,
+        'yres' : height
     }
 
 class DycerRender(bpy.types.RenderEngine):
