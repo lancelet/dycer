@@ -41,7 +41,8 @@ def camera_dict(cam):
         'rotation' : axis_angle_dict(axis, degrees(angleRad))
     }
 
-# def mesh_dict(mesh):
+def mesh_dict(mesh):
+    return {}
 
 def scene_dict(width, height, scene):
     resfac = scene.render.resolution_percentage / 100.0
@@ -66,6 +67,13 @@ class DycerRender(bpy.types.RenderEngine):
         self.width  = int(scene.render.resolution_x * resfac)
         self.height = int(scene.render.resolution_y * resfac)
         print(json.dumps(scene_dict(self.width, self.height, scene), sort_keys=True))
+
+        print("Exporting objects")
+        for ob in scene.objects:
+            # TODO: check if object is visible for rendering
+            # TODO: proper object instancing
+            if ob.type == 'MESH':
+                print(json.dumps(mesh_dict(ob.to_mesh(scene, True, 'RENDER'))))
 
         print("Setting result")
         result = self.begin_result(0, 0, self.width, self.height)
