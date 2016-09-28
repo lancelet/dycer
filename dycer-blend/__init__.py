@@ -41,8 +41,33 @@ def camera_dict(cam):
         'rotation' : axis_angle_dict(axis, degrees(angleRad))
     }
 
-def mesh_dict(mesh):
-    return {}
+def meshvertex_dict(vertex):
+    return {
+        'co' : vect3_dict(vertex.co),
+        'normal' : vect3_dict(vertex.normal)
+    }
+
+def matrixworld_dict(m):
+    # just flattening out the matrix m into row-major
+    ls = list(map(list, list(m.row)))
+    return [item for sublist in ls for item in sublist]
+
+def meshpolygon_dict(polygon):
+    return list(polygon.vertices)
+
+def mesh_dict(matrixworld, mesh):
+    return {
+        'matrixWorld' : matrixworld_dict(matrixworld),
+        'vertices' : list(map(meshvertex_dict, mesh.vertices)),
+        'faces' : list(map(meshpolygon_dict, mesh.polygons))
+    }
+
+def mesh_ob_dict(ob, scene):
+    mesh = ob.to_mesh(scene, True, 'RENDER')
+    return {
+        'name' : ob.name,
+        'mesh' : mesh_dict(ob.matrix_world, mesh)
+    }
 
 def scene_dict(width, height, scene):
     resfac = scene.render.resolution_percentage / 100.0
@@ -62,20 +87,29 @@ class DycerRender(bpy.types.RenderEngine):
     bl_use_spherical_stereo = False
 
     def render(self, scene):
-        print("Render")
+        # scene.frame_set(1, 0.0)
+        # Create the scene
         resfac = scene.render.resolution_percentage / 100.0
         self.width  = int(scene.render.resolution_x * resfac)
         self.height = int(scene.render.resolution_y * resfac)
-        print(json.dumps(scene_dict(self.width, self.height, scene), sort_keys=True))
+        jscene = scene_dict(self.width, self.height, scene)
 
-        print("Exporting objects")
+        # Create objects list
+        jobjs = []
         for ob in scene.objects:
             # TODO: check if object is visible for rendering
             # TODO: proper object instancing
             if ob.type == 'MESH':
-                print(json.dumps(mesh_dict(ob.to_mesh(scene, True, 'RENDER'))))
+                jobjs.append(mesh_ob_dict(ob, scene))
 
-        print("Setting result")
+        # Compose scene and objects list into top-level blob
+        blob = {
+            'scene': jscene,
+            'objects': jobjs
+        }
+        print(json.dumps(blob, sort_keys=True))
+
+        # set result
         result = self.begin_result(0, 0, self.width, self.height)
         rpass = result.layers[0].passes[0]
         rpass.rect = [ [0.0, 0.0, 1.0, 1.0] ] * (self.width * self.height)
